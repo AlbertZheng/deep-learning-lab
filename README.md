@@ -8,4 +8,3 @@ This is work in progress, and may have bugs. However, we call for your comments 
 * More Pythonic: fully leverage the power of python
 * Readability (over efficiency): Since it's for instruction purposes, we prefer *readability* over others.  
 * Understandability (over everything): Understanding DL key concepts is the main goal of this code.
-* KISS: Keep It Simple Stupid! https://www.techopedia.com/definition/20262/keep-it-simple-stupid-principle-kiss-principle
