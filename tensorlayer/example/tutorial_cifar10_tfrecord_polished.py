@@ -52,9 +52,10 @@ if device_name != '/device:GPU:0':
 print('### Found GPU at: {} ###'.format(device_name))
 """
 
-# See https://www.tensorflow.org/tutorials/using_gpu#allowing_gpu_memory_growth
 config = tf.ConfigProto()
+# See https://www.tensorflow.org/tutorials/using_gpu#allowing_gpu_memory_growth
 config.gpu_options.allow_growth = True
+config.allow_soft_placement = True
 
 # Download data, and convert to TFRecord format, see ```tutorial_tfrecord.py```
 X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(
@@ -62,9 +63,9 @@ X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(
 
 
 def print_dataset_shape(X_name, X, y_name, y):
-    print(X_name + '.shape ', X.shape, end='\t')
+    print(X_name + '.shape ', X.shape, end='\t,\t')
     print(y_name + '.shape ', y.shape)
-    print('%s.dtype %s , %s.dtype %s' % (X_name, X.dtype, y_name, y.dtype))
+    print('%s.dtype %s\t,\t%s.dtype %s' % (X_name, X.dtype, y_name, y.dtype))
 
 
 print_dataset_shape('X_train', X_train, 'y_train', y_train)
@@ -288,11 +289,10 @@ model_file_name = "./model_cifar10_advanced.ckpt"
 resume = True  # load model, resume from previous checkpoint?
 
 with tf.device('/cpu:0'):
-    config.allow_soft_placement = True
     sess = tf.Session(config=config)
 
     """ Prepare data in cpu """
-    # the tensors for reader and distorter for a single Example
+    # The reader and distorter tensor for a single Example
     x_train_, y_train_ = read_and_decode("train.cifar10", True)
     x_test_, y_test_ = read_and_decode("test.cifar10", False)
 
@@ -306,14 +306,13 @@ with tf.device('/cpu:0'):
     print(x_test_)
     print(y_test_)
 
-    # the tensors for streaming to the model with a batch augmented data per a training batch/step
-    # by using multi-threads.
+    # The input streaming tensor of a batch augmented data per a training step by using multi-threads.
     x_train_batch, y_train_batch = tf.train.shuffle_batch(
         [x_train_, y_train_], batch_size=batch_size, capacity=2000, min_after_dequeue=1000, num_threads=32
         # set the number of threads here
     )
 
-    # for testing, uses batch instead of shuffle_batch
+    # For testing, uses batch instead of shuffle_batch
     x_test_batch, y_test_batch = tf.train.batch(
         [x_test_, y_test_], batch_size=batch_size, capacity=50000, num_threads=32
     )
@@ -340,20 +339,20 @@ with tf.device('/cpu:0'):
     #   ...
     #
     #   # In the loop of batches
-    #   for b in range(batch count in a epoch):
+    #   for b in range(batch count in an epoch):
     #     val, l = sess.run([x_train_batch, y_train_batch])   # pull a batch size of data
     #
     #     tl.visualize.images2d(val, second=3, saveable=False, name='batch', dtype=np.uint8, fig_idx=2020121)
     #     err, ac, _ = sess.run([cost, acc, train_op], feed_dict={x_crop: val, y_: l})
 
     with tf.device('/gpu:0'):  # <-- remove it if you don't have GPU
-        # using local response normalization
-        network, cost, acc, = model(x_train_batch, y_train_batch, False)
-        _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
+        # Using local response normalization
+        # network, cost, acc, = model(x_train_batch, y_train_batch, False)
+        # _, cost_test, acc_test = model(x_test_batch, y_test_batch, True)
 
-        # you may want to try batch normalization
-        # network, cost, acc, = model_batch_norm(x_train_batch, y_train_batch, None, is_train=True)
-        # _, cost_test, acc_test = model_batch_norm(x_test_batch, y_test_batch, True, is_train=False)
+        # You may want to try batch normalization
+        network, cost, acc, = model_batch_norm(x_train_batch, y_train_batch, None, is_train=True)
+        _, cost_test, acc_test = model_batch_norm(x_test_batch, y_test_batch, True, is_train=False)
 
     # train
     n_epoch = 50000
@@ -419,7 +418,7 @@ with tf.device('/cpu:0'):
             print("Save model " + "!" * 10)
             saver = tf.train.Saver()
             save_path = saver.save(sess, model_file_name)
-            # you can also save model into npz
+            # You can also save model into npz
             tl.files.save_npz(network.all_params, name='model.npz', sess=sess)
             # and restore it as follow:
             # tl.files.load_and_assign_npz(sess=sess, name='model.npz', network=network)

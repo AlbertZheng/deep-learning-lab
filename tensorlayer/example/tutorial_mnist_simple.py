@@ -23,8 +23,9 @@ tf.logging.set_verbosity(tf.logging.DEBUG)
 tl.logging.set_verbosity(tl.logging.DEBUG)
 
 sess = tf.InteractiveSession()
-#sess = tf_debug.LocalCLIDebugWrapperSession(sess)
-# Using tfdbg dashboard
+# Use tfdbg CLI
+# sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+# Use tfdbg dashboard
 sess = tf_debug.TensorBoardDebugWrapperSession(sess, "albert-mbp.local:6064")
 
 # prepare data
@@ -61,7 +62,7 @@ correct_prediction = tf.equal(tf.argmax(y, 1), y_)
 """ tf.cast() returns [0 or 1, 0 or 1, ...] """
 """ caculating the mean value of correct_predictions of a batch. i.e. sum(correct_predictions of a batch)/batch_size """
 acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-#y_op = tf.argmax(tf.nn.softmax(y), 1)
+y_op = tf.argmax(tf.nn.softmax(y), 1)
 
 # define the optimizer
 train_params = network.all_params
@@ -82,7 +83,7 @@ thus `tf.global_variables_initializer().run()` before the `fit()` call will be u
 
 # print network information
 """[TL] Attempting to use uninitialized value relu1/W"""
-#network.print_params()
+network.print_params(False)
 network.print_layers()
 
 # train the network
